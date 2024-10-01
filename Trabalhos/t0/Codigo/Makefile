@@ -6,9 +6,10 @@ CC = gcc
 CFLAGS = -Wall -Werror -g
 LDLIBS = -lcurses
 
+
 # arquivos objeto compilados (.o) que compõem o simulador (main) e o montador
 OBJS_MAIN = cpu.o es.o memoria.o relogio.o console.o terminal.o tela_curses.o \
-		instrucao.o err.o programa.o controle.o main.o
+		instrucao.o err.o programa.o controle.o main.o aleatorio.o
 OBJS_MONTADOR = instrucao.o err.o montador.o
 OBJS = ${OBJS_MAIN} ${OBJS_MONTADOR}
 MAQS = ex1.maq ex2.maq ex3.maq ex4.maq ex5.maq ex6.maq

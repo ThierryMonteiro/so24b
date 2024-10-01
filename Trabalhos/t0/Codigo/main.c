@@ -2,7 +2,7 @@
 // inicializa e encerra a simulação
 // simulador de computador
 // so24b
-
+//includes do Professor
 #include "controle.h"
 #include "programa.h"
 #include "memoria.h"
@@ -13,6 +13,11 @@
 #include "es.h"
 #include "dispositivos.h"
 
+//meus includes
+#include "aleatorio.h"
+
+
+//padrao C
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -21,6 +26,9 @@
 
 // estrutura com os componentes do computador simulado
 typedef struct {
+
+  aleatorio_t *aleatorio;
+  // componentes feitos pelo professor
   mem_t *mem;
   cpu_t *cpu;
   relogio_t *relogio;
@@ -37,7 +45,7 @@ static void cria_hardware(hardware_t *hw)
   // cria dispositivos de E/S
   hw->console = console_cria();
   hw->relogio = relogio_cria();
-
+  hw->aleatorio = genrand(0); // O ideal não seria passar um tempo gerado pelo timer do próprio SO? Talvez. xGH
   // cria o controlador de E/S e registra os dispositivos
   //   por exemplo, o dispositivo 8 do controlador de E/S (e da CPU) será o
   //   dispositivo 0 do relógio (que é o contador de instruções)
@@ -59,6 +67,12 @@ static void cria_hardware(hardware_t *hw)
   es_registra_dispositivo(hw->es, D_RELOGIO_INSTRUCOES, hw->relogio, 0, relogio_leitura, NULL);
   es_registra_dispositivo(hw->es, D_RELOGIO_REAL      , hw->relogio, 1, relogio_leitura, NULL);
 
+  //lê aleatorio e seed
+  es_registra_dispositivo(hw->es, D_ALEATORIONUM      , hw->aleatorio, 0, aleatorio_leitura, NULL);
+  es_registra_dispositivo(hw->es, D_ALEATORIOSEED     , hw->aleatorio, 1, aleatorio_leitura, NULL);
+
+
+
   // cria a unidade de execução e inicializa com a memória e o controlador de E/S
   hw->cpu = cpu_cria(hw->mem, hw->es);
 
@@ -69,6 +83,10 @@ static void cria_hardware(hardware_t *hw)
 
 static void destroi_hardware(hardware_t *hw)
 {
+  //destroy dos meus dispositivos
+  freerand(hw->aleatorio);
+
+  //destroy do professor
   controle_destroi(hw->controle);
   cpu_destroi(hw->cpu);
   es_destroi(hw->es);
@@ -109,6 +127,7 @@ int main(int argc, char *argv[])
   cria_hardware(&hw);
   // coloca um programa na memória
   init_mem(hw.mem, nome_do_programa);
+
 
   // executa o laço principal do controlador
   controle_laco(hw.controle);
